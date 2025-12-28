@@ -1,170 +1,181 @@
-# X-Ray Debugger - Multi-Step Decision Pipeline Debugger
+# X-Ray Debugger
 
-A debugging system for non-deterministic, multi-step algorithmic pipelines. Provides transparency into complex decision processes by capturing the "why" at each step.
+Multi-step decision pipeline debugger for non-deterministic algorithmic workflows.
 
-## 🎯 Overview
+## Overview
 
-X-Ray Debugger consists of three components:
-1. **X-Ray Library**: Lightweight SDK for capturing decision context
-2. **Dashboard UI**: Web interface for visualizing execution trails
-3. **Demo Application**: Competitor product selection pipeline (Amazon use case)
+X-Ray Debugger provides transparency into complex decision processes by capturing the "WHY" at each step of a pipeline, not just the "WHAT". Built for debugging AI agents, recommendation systems, and other multi-step algorithms where understanding decision logic is critical.
 
-## 🚀 Quick Start
+## Features
+
+- 🔍 **Decision Trail Capture** - Records input, output, and reasoning at each pipeline step
+- 📊 **Visual Dashboard** - React-based UI for exploring execution trails
+- ✅ **Detailed Filter Analysis** - Shows pass/fail reasons for each candidate in filtering steps
+- 💾 **Persistent Storage** - H2 database with file-based persistence
+- 🎯 **Production-Ready Code** - Clean architecture, constructor injection, zero warnings
+
+## Demo Application
+
+Competitor product selection pipeline for Amazon sellers:
+1. **Keyword Generation** - LLM extracts search terms from product
+2. **Candidate Search** - Fetches potential competitors from catalog
+3. **Apply Filters** - Business logic selects best match with detailed reasoning
+
+## Tech Stack
+
+**Backend:**
+- Java 17 + Spring Boot 3.2
+- Spring Data JPA + H2 Database
+- Lombok for clean code
+- Maven build system
+
+**Frontend:**
+- React 18 + TypeScript
+- Tailwind CSS for styling
+- React Router for navigation
+
+## Setup Instructions
 
 ### Prerequisites
 - Java 17+
 - Node.js 18+
-- Maven
+- Maven 3.6+
 
 ### Backend Setup
 ```bash
 cd backend
-./mvnw spring-boot:run
+
+# Build and run
+mvn clean install
+mvn spring-boot:run
 ```
-Backend runs on `http://localhost:8080`
+
+Backend starts on **http://localhost:8080**
+
+**Verify:**
+- API: http://localhost:8080/api/executions
+- H2 Console: http://localhost:8080/h2-console
 
 ### Frontend Setup
 ```bash
 cd frontend
+
+# Install dependencies (first time only)
 npm install
+
+# Start development server
 npm start
 ```
-Frontend runs on `http://localhost:3000`
 
-### Running the Demo
-1. Start backend server
-2. Start frontend application
-3. Click "Run Demo" button in the UI
-4. View execution details and step-by-step decision trail
+Frontend opens automatically at **http://localhost:3000**
 
-## 🏗️ Architecture
+### Run Demo
 
-### X-Ray Library Design
+1. Ensure backend is running
+2. Open http://localhost:3000 in browser
+3. Click "▶ Run Demo" button
+4. Explore execution details and filter evaluations
+
+## Architecture
+
+### XRay Library API
 ```java
-XRayTracer tracer = new XRayTracer();
-String executionId = tracer.startExecution(context);
+// Start execution
+String execId = tracer.startExecution(context);
 
-tracer.recordStep(StepRecord.builder()
+// Record steps
+tracer.recordStep(execId, StepRecord.builder()
     .stepName("keyword_generation")
-    .input(input)
-    .output(output)
-    .reasoning("Extracted key attributes from product")
+    .input(inputData)
+    .output(outputData)
+    .reasoning("Extracted key product attributes...")
     .build());
 
-tracer.endExecution();
+// Complete execution
+tracer.endExecution(execId);
 ```
 
 ### Data Model
-- **XRayExecution**: Container for complete pipeline run
-  - executionId, startTime, endTime, status, context
-- **XRayStep**: Individual decision point
-  - stepId, stepName, timestamp, input, output, reasoning, metadata
 
-### Technology Stack
-- **Backend**: Spring Boot 3.x, JPA, H2 Database
-- **Frontend**: React 18, TypeScript, Tailwind CSS
-- **Storage**: H2 embedded database (file-based)
+- **XRayExecution** - Container for pipeline run (executionId, status, context, steps)
+- **XRayStep** - Individual decision point (stepName, input, output, reasoning, metadata)
+- JSON columns for flexible schemas across different pipeline types
 
-## 📊 Design Decisions
+### Design Decisions
 
-### Why H2 Database?
-- Zero external dependencies, embedded
+**Why H2 Database?**
+- Zero external dependencies
 - File-based persistence (data survives restarts)
-- Easy to demo and setup
-- Production system would use PostgreSQL/MongoDB
+- Easy demo setup
+- Production would use PostgreSQL/MongoDB
 
-### Why Simple REST API?
-- Clear separation of concerns
-- Easy to test independently
-- Frontend-agnostic (could build CLI, mobile app, etc.)
+**Why JSON Columns?**
+- Different pipelines need different data structures
+- No schema migrations for new step types
+- Maximum flexibility
 
-### Why Store Full JSON?
-- Flexible schema for different pipeline types
-- No schema migrations needed for new step types
-- Easy to query and display in UI
+**Why Constructor Injection?**
+- Immutable dependencies (thread-safe)
+- Easier testing with mocks
+- Spring Boot best practice
 
-## 🎨 Dashboard Features
+**Why Emphasize Reasoning?**
+- Traditional tracing shows "what happened" (function calls, timing)
+- X-Ray shows "why decisions were made" (business logic, filters)
+- Debugging non-deterministic systems requires understanding reasoning
 
-### Execution List
-- All pipeline executions with timestamps
-- Quick status overview
-- Click to view details
+## Known Limitations
 
-### Execution Detail
-- Step-by-step timeline visualization
-- Collapsible input/output/metadata
-- Prominent reasoning display
-- Filter evaluation details with pass/fail indicators
+1. **Single-user demo** - No authentication or multi-tenancy
+2. **Mock data** - Demo uses hardcoded products instead of real APIs
+3. **No search/filter** - Dashboard shows all executions (no date range filter)
+4. **No export** - Can't download executions as JSON
 
-### Key UX Decisions
-- **Scannability**: Failures highlighted in red, passes in green
-- **Collapsible sections**: Don't overwhelm with data
-- **Clear reasoning**: "Why" is the most prominent element
-- **Drill-down**: Click to expand full details
+## Future Improvements
 
-## 🔮 Future Improvements
+**With more time, I would add:**
 
-With more time, I would add:
+1. **Comparison View** - Side-by-side comparison of executions to spot differences
+2. **Search & Filtering** - Filter by date, status, step type, or search reasoning text
+3. **Export Functionality** - Download executions as JSON for offline analysis
+4. **Performance Metrics** - Per-step timing to identify bottlenecks
+5. **Real-time Streaming** - WebSocket support for long-running pipelines
+6. **Schema Validation** - Define and enforce step schemas with type-safe recording
+7. **Alerting** - Notify on specific failure patterns
+8. **Aggregate Analytics** - Success/failure rates over time
 
-1. **Search & Filter**: 
-   - Filter executions by date range, status
-   - Search by step name, reasoning content
-   - Filter by failure patterns
+## Code Quality
 
-2. **Comparison View**: 
-   - Side-by-side comparison of two executions
-   - Highlight differences in decisions
-   - Track what changed between runs
+- ✅ Zero IntelliJ warnings
+- ✅ Constructor injection (not field injection)
+- ✅ No unused methods or imports
+- ✅ Clean, well-documented code
+- ✅ Type-safe TypeScript
+- ✅ Comprehensive error handling
 
-3. **Export & Analytics**:
-   - Export execution as JSON for offline analysis
-   - Aggregate metrics across multiple runs
-   - Trend analysis (success/failure rates over time)
+## Project Structure
+```
+xray-debugger/
+├── backend/
+│   ├── src/main/java/com/equalcollective/xray/
+│   │   ├── model/          # JPA entities (XRayExecution, XRayStep)
+│   │   ├── repository/     # Spring Data repositories
+│   │   ├── service/        # XRayTracer core library
+│   │   ├── controller/     # REST API endpoints
+│   │   └── demo/           # Competitor selection demo
+│   └── pom.xml
+└── frontend/
+    ├── src/
+    │   ├── components/     # React components
+    │   ├── services/       # API client
+    │   └── types/          # TypeScript types
+    └── package.json
+```
 
-4. **Real-time Streaming**:
-   - WebSocket support for live execution tracking
-   - See steps as they happen in long-running pipelines
+## API Endpoints
 
-5. **Schema Validation**:
-   - Define and enforce step schemas
-   - Type-safe step recording
-   - Auto-generate TypeScript types from schemas
-
-6. **Performance Tracking**:
-   - Step duration metrics
-   - Identify bottlenecks in pipeline
-   - Historical performance trends
-
-7. **Alerting**:
-   - Notify on specific failure patterns
-   - Threshold-based alerts (e.g., >50% filter failures)
-   - Integration with Slack/PagerDuty
-
-## 🧪 Demo Application
-
-The included competitor selection demo simulates a 3-step pipeline:
-
-1. **Keyword Generation** (LLM step)
-   - Input: Product title and category
-   - Output: Search keywords
-   - Mock LLM response based on input patterns
-
-2. **Candidate Search** (API step)
-   - Input: Search keywords
-   - Output: 50 candidate products from mock database
-   - Simulates large result set (2,847 total products)
-
-3. **Apply Filters** (Business logic step)
-   - Input: Candidate products, reference product
-   - Filters: Price range (0.5x-2x), min rating (3.8★), min reviews (100)
-   - Output: Qualified competitors with detailed pass/fail reasoning
-
-All data is mock/hardcoded - the focus is on demonstrating the X-Ray system's capabilities.
-
-## 📝 License
-
-MIT License - feel free to use this in your own projects!
-
-## 🤝 Contributing
-
-This is a demo project, but suggestions and improvements are welcome!
+- `GET /api/executions` - List all executions
+- `GET /api/executions/{id}` - Get execution with steps
+- `POST /api/demo/run-competitor-selection` - Run demo pipeline
+- `DELETE /api/executions/{id}` - Delete execution
+- `DELETE /api/executions` - Delete all executions
